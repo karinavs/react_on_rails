@@ -3,7 +3,6 @@ import { Header, Container } from 'semantic-ui-react';
 import TodoList from './components/todos/TodoList';
 import TodoForm from './components/todos/TodoForm';
 import axios from 'axios';
-
 class App extends Component {
   state = { todos: [] }
   componentDidMount() {
@@ -17,7 +16,6 @@ class App extends Component {
         console.log(err)
       })
   }
-
   addTodo = (todo) => {
     // Make a api call to the rails to add into the database
     axios.post('/api/todos', todo )
@@ -30,38 +28,42 @@ class App extends Component {
         console.log(err)
       })
   }
-
   updateTodo = (id, todo) => {
     // make a api call to rails to update a todo with an id
-    axios.put(`/api.todos/${id}`, todo) 
+    axios.put(`/api/todos/${id}`, todo) 
       .then( res => {
-        const todos =this.state.todos.map( t => {
+        // update the state with the updated todo
+        const todos = this.state.todos.map( t => {
           if ( t.id === id){
             return res.data
           }
           return t
         })
-        this.setState({ todos})
-
+        this.setState({ todos })
       })
-      .catch(err => {
+      .catch( err => {
         console.log(err)
       })
-    // update the state with the updated todo
   }
-
   deleteTodo = (id) => {
     // remove the todo from the database
-    // remove the todo from the state
+    axios.delete(`/api/todos/${id}`)
+      .then( res => {
+        // remove the todo from the state
+        const { todos } = this.state
+        this.setState({ todos: todos.filter( t => t.id !== id )})
+      })
+      .catch( err => {
+        console.log(err)
+      })
   }
-
   render() {
     const { todos } = this.state
     return(
       <Container>
         <Header>Todo List</Header>
         <TodoForm addTodo={this.addTodo}/>
-        <TodoList todos={todos} />
+        <TodoList todos={todos} updateTodo={this.updateTodo} deleteTodo={this.deleteTodo} />
       </Container>
     )
   }
